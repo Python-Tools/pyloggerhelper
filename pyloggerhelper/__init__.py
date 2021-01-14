@@ -1,1 +1,1 @@
-from .proxy import StructlogProxy,log
+from .proxy import StructlogProxy, log
