@@ -1,6 +1,6 @@
 import sys
 import logging
-from typing import Optional, Any
+from typing import Optional, Any, Dict
 import structlog
 from pyproxypattern import Proxy
 
@@ -9,17 +9,17 @@ class StructlogProxy(Proxy):
     """Structlog的代理,使用app_name和loglevel初始化."""
     __slots__ = ('app_name', 'log_level', 'instance', "_callbacks", "_instance_check")
 
-    def __init__(self, app_name: Optional[str] = None, log_level: Optional[str] = None) -> None:
+    def __init__(self, app_name: Optional[str] = None, log_level: Optional[str] = None, binds: Optional[Dict[str, Any]] = None) -> None:
         self.app_name = app_name
         self.log_level = log_level
 
         if app_name and log_level:
-            instance = self.new_instance(app_name, log_level)
+            instance = self.new_instance(app_name, log_level, binds=binds)
             super().__init__(instance)
         else:
             super().__init__()
 
-    def new_instance(self, app_name: str, log_level: str, **kwargs: Any) -> structlog.BoundLogger:
+    def new_instance(self, app_name: str, log_level: str, binds: Optional[Dict[str, Any]] = None, **kwargs: Any) -> structlog.BoundLogger:
         self.app_name = app_name
         self.log_level = log_level
         structlog.configure(
@@ -44,15 +44,18 @@ class StructlogProxy(Proxy):
         root_logger = logging.getLogger()
         root_logger.addHandler(handler)
         root_logger.setLevel(self.log_level)  # 设置最低log等级
-        return structlog.get_logger(self.app_name, **kwargs)
+        log = structlog.get_logger(self.app_name, **kwargs)
+        if binds:
+            log = log.bind(**binds)
+        return log
 
-    def initialize_for_app(self, app_name: str, *, log_level: str = "DEBUG", **kwargs: Any) -> None:
+    def initialize_for_app(self, app_name: str, *, log_level: str = "DEBUG", binds: Optional[Dict[str, Any]] = None, **kwargs: Any) -> None:
         """初始化log对象.
         Args:
             app_name (str): app名
             log_level (str): log等级
         """
-        instance = self.new_instance(app_name, log_level, **kwargs)
+        instance = self.new_instance(app_name, log_level, binds=binds, **kwargs)
         self.initialize(instance)
 
 
