@@ -43,7 +43,7 @@ class StructlogProxy(Proxy):
         root_logger.addHandler(handler)
         root_logger.setLevel(self.log_level)  # 设置最低log等级
         log = structlog.get_logger(self.app_name, **kwargs)
-        b = { "app_name": app_name }
+        b = {"app_name": app_name}
         if binds:
             b.update(binds)
         log = log.bind(**b)
