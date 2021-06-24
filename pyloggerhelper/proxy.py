@@ -25,11 +25,9 @@ class StructlogProxy(Proxy):
         structlog.configure(
             processors=[
                 structlog.stdlib.filter_by_level,  # 判断是否接受某个level的log消息
-                structlog.stdlib.add_logger_name,  # 增加字段logger
                 structlog.stdlib.add_log_level,  # 增加字段level
                 structlog.stdlib.PositionalArgumentsFormatter(),
-                structlog.processors.TimeStamper(
-                    fmt="iso"),  # 增加字段timestamp且使用iso格式输出
+                structlog.processors.TimeStamper(fmt="iso",key="time"),  # 增加字段timestamp且使用iso格式输出
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,  # 捕获异常的栈信息
                 structlog.processors.StackInfoRenderer(),  # 详细栈信息
@@ -45,8 +43,12 @@ class StructlogProxy(Proxy):
         root_logger.addHandler(handler)
         root_logger.setLevel(self.log_level)  # 设置最低log等级
         log = structlog.get_logger(self.app_name, **kwargs)
+        b = {
+            "app_name":app_name
+        }
         if binds:
-            log = log.bind(**binds)
+            b.update(binds)
+        log = log.bind(**b)
         return log
 
     def initialize_for_app(self, app_name: str, *, log_level: str = "DEBUG", binds: Optional[Dict[str, Any]] = None, **kwargs: Any) -> None:
