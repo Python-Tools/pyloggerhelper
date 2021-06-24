@@ -27,7 +27,7 @@ class StructlogProxy(Proxy):
                 structlog.stdlib.filter_by_level,  # 判断是否接受某个level的log消息
                 structlog.stdlib.add_log_level,  # 增加字段level
                 structlog.stdlib.PositionalArgumentsFormatter(),
-                structlog.processors.TimeStamper(fmt="iso",key="time"),  # 增加字段timestamp且使用iso格式输出
+                structlog.processors.TimeStamper(fmt="iso", key="time"),  # 增加字段timestamp且使用iso格式输出
                 structlog.processors.StackInfoRenderer(),
                 structlog.processors.format_exc_info,  # 捕获异常的栈信息
                 structlog.processors.StackInfoRenderer(),  # 详细栈信息
